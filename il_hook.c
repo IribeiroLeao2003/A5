@@ -20,7 +20,7 @@ int ilGame(int delay, char *pattern, int target);
 int ticks_test(int time);  
 void _il_lab_tick(void);   
 int ilTilt(int choice);  
-int _il_watchdog_start(int timeout, int delay); 
+int _il_watchdog_start(int delay); 
 
 
 /*
@@ -231,7 +231,11 @@ void testWatchdog(int action)
 ADD_CMD("watchDogs",testWatchdog,"loool")   
  
 
-
+/*
+* Function Name: _ilWatch 
+* Paremeters: Action  
+* Description: Collects user input and starts watchdog 
+*/
  void _ilWatch(int action)
 {  
 if(action==CMD_SHORT_HELP) return;
@@ -262,13 +266,18 @@ if(fetch_status) {
     timeout = 500;
 }
 
-uint32_t reload = timeout * 32000 / (4 * 36 * 1000) - 1; 
 
+// calculates reload time 
+uint32_t reload = timeout * 32000 / (4 * 36 * 1000) - 1; 
+ 
+
+ // initializes and starts watchdog 
  mes_InitIWDG(reload); 
- mes_IWDGStart();  
+ mes_IWDGStart();   
+ // infinite loop while calling LED assembly function and refreshing it 
  while(1){ 
     
-    printf("ilWatchD returned: %d\n", _il_watchdog_start(timeout, delay) );    
+   _il_watchdog_start(delay);   
     mes_IWDGRefresh(); 
  }   
 
