@@ -87,7 +87,18 @@
                             @ encoded function. Necessary for interlinking between ARM and THUMB code.
 .global ticks_test      @ Make the symbol name for the function visible to the linker
 .type ticks_test, %function @ Declares that the symbol is a function (not strictly required)
+ 
 
+ .align 2                    @ Code alignment - 2^n alignment (n=2)
+                            @ This causes the assembler to use 4 byte alignment
+.syntax unified             @ Sets the instruction set to the new unified ARM + THUMB
+                            @ instructions. The default is divided (separate instruction sets)
+.global _il_a5_tick_handler      @ Make the symbol name for the function visible to the linker
+.code 16                    @ 16bit THUMB code (BOTH .code and .thumb_func are required)
+.thumb_func  
+                            @ encoded function. Necessary for interlinking between ARM and THUMB code.
+
+.type _il_a5_tick_handler, %function @ Declares that the symbol is a function (not strictly required) 
 
  
 
@@ -97,40 +108,68 @@ LEDaddress: .word 0x48001014
 
 
 _il_watchdog_start:  
-    push {r4-r7, lr} 
-    @ mov   r4, r0    @ timeout 
-    @ mov   r5, r1    @ delay 
-    @ mov   r7, #0    @ LED start 
-    @ mov   r6, #8    @ LED finish 
+    push {r4-r7, lr}
+    mov r6, #8      @ full loop 
+    mov r7, #0      @ led   
+    mov r5, r1 @    delay 
+
+
+    myloop1: 
+    mov r0, r7  
+    bl   BSP_LED_Toggle 
+
+    mov r0, r5 
+    bl busy_delay
+
+    mov r0, r7 
+    bl   BSP_LED_Toggle   
+
+    mov r0, r5 
+    bl busy_delay
+   
+    add r7, r7, #1 
+    sub r6, r6, #1
+                    
+    cmp r6, #0 
+    bgt myloop1  
+
+
+    pop  {r4-r7, lr}    
+
+    bx lr  
+  
+
+
+
+
+_il_a5_tick_handler:   
+    push {lr} 
+    mov   r4, #0
+    mov   r7, #0    @ LED start 
+    mov   r6, #8    @ LED finish 
     
+    mystartLoop: 
+    mov r7, #0 
+    mov r6, #8
 
     myloop: 
     mov r0, r7 
     bl   BSP_LED_Toggle  
 
-    mov  r0, r5
-    bl   busy_delay
-
     mov r0, r7 
     bl   BSP_LED_Toggle  
 
-    mov  r0, r5
-    bl   busy_delay
     
     add r7, r7, #1 
     sub r6, r6, #1
                     
     cmp r6, #0 
-    bgt loop  
+    b mystartLoop   
+    pop {lr} 
+    bx lr  
+
+    .size _il_lab_tick, .-_il_lab_tick 
     
-
-    
-
-    pop  {r4-r7, lr}    
-
-    bx lr   
-
-
 
 
 @ Function Declaration : int il_led_demo_a2(int count, int delay)
@@ -148,7 +187,8 @@ il_led_demo_a2:
 @
 @ Description: Works as loop and fixes delay 
 @
-loop:  
+loop:   
+   
     mov r0, r7 
     bl   BSP_LED_Toggle  
 

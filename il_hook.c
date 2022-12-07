@@ -223,7 +223,7 @@ ADD_CMD("ilTilt",ilTiltGame,"Test the new TicksTest function")
 
 void testWatchdog(int action)
 {  
-    mes_InitIWDG();   
+    mes_InitIWDG(2);   
     mes_IWDGStart(); 
     mes_IWDGRefresh(); 
 
@@ -259,22 +259,29 @@ fetch_status = fetch_uint32_arg(&timeout);
 
 if(fetch_status) {
 
-    timeout = 0xFFFFF;
+    timeout = 500;
 }
 
+uint32_t reload = timeout * 32000 / (4 * 36 * 1000) - 1; 
 
-while(1){ 
-    printf("ilWatchD returned: %d\n", _il_watchdog_start(timeout, delay) );  
-    HAL_Delay(500);
+ mes_InitIWDG(reload); 
+ mes_IWDGStart();  
+ while(1){ 
     
-}
+    printf("ilWatchD returned: %d\n", _il_watchdog_start(timeout, delay) );    
+    mes_IWDGRefresh(); 
+ }   
+
+
+    
+    
+
 
 
 
 
 }
 ADD_CMD("ilWatch",_ilWatch,"Test the new _ilWatch function")  
-
 
 
 
