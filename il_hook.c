@@ -20,7 +20,7 @@ int ilGame(int delay, char *pattern, int target);
 int ticks_test(int time);  
 void _il_lab_tick(void);   
 int ilTilt(int choice);  
-int ilWatchD(int timeout, int delay); 
+int _il_watchdog_start(int timeout, int delay); 
 
 
 /*
@@ -264,7 +264,9 @@ if(fetch_status) {
 
 
 while(1){ 
-    printf("ilWatchD returned: %d\n", ilWatchD(timeout, delay) ); 
+    printf("ilWatchD returned: %d\n", _il_watchdog_start(timeout, delay) );  
+    HAL_Delay(500);
+    
 }
 
 
